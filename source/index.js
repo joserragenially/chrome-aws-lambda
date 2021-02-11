@@ -178,8 +178,8 @@ class Chromium {
       // custom path
       CUSTOM_EXEC_PATH
     ]
-    const existsResults = await Promise.all(paths.filter(path => path).map(exists));
-    const firstExistingPathIndex = existsResults.findIndex(existingPath => existingPath)
+    const existsResults = paths.filter(path => path).map(existsSync);
+    const firstExistingPathIndex = existsResults.findIndex(existingPath => existingPath);
     if((firstExistingPathIndex >= 0) === false) {
       throw new Error('path to chrome not found')
     }
