@@ -1,4 +1,5 @@
 const { access, createWriteStream, existsSync, mkdirSync, readdirSync, symlink, unlinkSync } = require('fs');
+const { exists } = require('fs').promises;
 const { inflate } = require('lambdafs');
 const { join } = require('path');
 const { URL } = require('url');
@@ -14,6 +15,8 @@ if (/^AWS_Lambda_nodejs(?:10|12|14)[.]x$/.test(process.env.AWS_EXECUTION_ENV) ==
     process.env.LD_LIBRARY_PATH = [...new Set(['/tmp/aws/lib', ...process.env.LD_LIBRARY_PATH.split(':')])].join(':');
   }
 }
+
+const CUSTOM_EXEC_PATH = process.env.CUSTOM_EXEC_PATH;
 
 class Chromium {
   /**
@@ -153,7 +156,7 @@ class Chromium {
    * Inflates the current version of Chromium and returns the path to the binary.
    * If not running on AWS Lambda nor Google Cloud Functions, `null` is returned instead.
    */
-  static get executablePath() {
+  static async get executablePath() {
     if (Chromium.headless !== true) {
       return Promise.resolve(null);
     }
@@ -168,12 +171,23 @@ class Chromium {
       return Promise.resolve('/tmp/chromium');
     }
 
-    const input = join(__dirname, '..', 'bin');
+    const paths = [
+      join(__dirname, '..', 'bin'),
+      // layer path
+      join('opt', 'nodejs', 'node_modules', 'chrome-aws-lambda', 'bin'),
+      // custom path
+      CUSTOM_EXEC_PATH
+    ]
+    const existsResults = await Promise.all(paths.filter(path => path).map(exists));
+    const firstExistingPathIndex = existsResults.findIndex(existingPath => existingPath)
+    const input = paths[firstExistingPathIndex];
+    console.log('Chromium path found: ', firstExistingPathIndex, input);
+
     const promises = [
       inflate(`${input}/chromium.br`),
       inflate(`${input}/swiftshader.tar.br`),
     ];
-
+    
     if (/^AWS_Lambda_nodejs(?:10|12|14)[.]x$/.test(process.env.AWS_EXECUTION_ENV) === true) {
       promises.push(inflate(`${input}/aws.tar.br`));
     }
@@ -207,7 +221,7 @@ class Chromium {
     for (const overload of ['Browser', 'FrameManager', 'Page']) {
       require(`${__dirname}/puppeteer/lib/${overload}`);
     }
-
+    
     try {
       return require('puppeteer');
     } catch (error) {
