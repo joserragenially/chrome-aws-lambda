@@ -156,7 +156,7 @@ class Chromium {
    * Inflates the current version of Chromium and returns the path to the binary.
    * If not running on AWS Lambda nor Google Cloud Functions, `null` is returned instead.
    */
-  static async get executablePath() {
+  static get executablePath() {
     if (Chromium.headless !== true) {
       return Promise.resolve(null);
     }
@@ -180,6 +180,9 @@ class Chromium {
     ]
     const existsResults = await Promise.all(paths.filter(path => path).map(exists));
     const firstExistingPathIndex = existsResults.findIndex(existingPath => existingPath)
+    if((firstExistingPathIndex >= 0) === false) {
+      throw new Error('path to chrome not found')
+    }
     const input = paths[firstExistingPathIndex];
     console.log('Chromium path found: ', firstExistingPathIndex, input);
 
