@@ -161,7 +161,7 @@ class Chromium {
       // custom path
       CUSTOM_EXEC_PATH,
       // layer path
-      join('opt', 'nodejs', 'node_modules', 'chrome-aws-lambda', 'bin'),
+      '/opt/nodejs/node_modules/chrome-aws-lambda/bin',
       // original path
       join(__dirname, '..', 'bin'),
     ]
