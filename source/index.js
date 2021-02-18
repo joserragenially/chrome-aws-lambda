@@ -157,12 +157,13 @@ class Chromium {
    * If not running on AWS Lambda nor Google Cloud Functions, `null` is returned instead.
    */
   static get executablePath() {
-    const paths = [
-      join(__dirname, '..', 'bin'),
+    const paths = [      
+      // custom path
+      CUSTOM_EXEC_PATH,
       // layer path
       join('opt', 'nodejs', 'node_modules', 'chrome-aws-lambda', 'bin'),
-      // custom path
-      CUSTOM_EXEC_PATH
+      // original path
+      join(__dirname, '..', 'bin'),
     ]
     const existsResults = paths.filter(path => path).map(existsSync);
     const firstExistingPathIndex = existsResults.findIndex(existingPath => existingPath);
@@ -170,7 +171,7 @@ class Chromium {
       throw new Error('path to chrome not found')
     }
     const input = paths[firstExistingPathIndex];
-    console.log('Chromium path found: ', firstExistingPathIndex, input);
+    console.log(`[chrome-aws-lambda] Chromium path found [index: ${firstExistingPathIndex}]: ${input}`);
 
     const promises = [
       inflate(`${input}/chromium.br`),
