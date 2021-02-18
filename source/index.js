@@ -170,7 +170,7 @@ class Chromium {
     if((firstExistingPathIndex >= 0) === false) {
       throw new Error('path to chrome not found')
     }
-    const input = paths[firstExistingPathIndex];
+    const input = existsResults[firstExistingPathIndex];
     console.log(`[chrome-aws-lambda] Chromium path found [index: ${firstExistingPathIndex}]: ${input}`);
 
     const promises = [
