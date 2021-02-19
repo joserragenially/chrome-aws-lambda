@@ -165,13 +165,12 @@ class Chromium {
       // original path
       join(__dirname, '..', 'bin'),
     ]
-    const existsResults = paths.filter(path => path).map(existsSync);
-    const firstExistingPathIndex = existsResults.findIndex(existingPath => existingPath);
-    if((firstExistingPathIndex >= 0) === false) {
+    const existingPaths = paths.filter(path => path && existsSync(path));
+    if(!existingPaths || !existingPaths.length) {
       throw new Error('path to chrome not found')
     }
-    const input = existsResults[firstExistingPathIndex];
-    console.log(`[chrome-aws-lambda] Chromium path found [index: ${firstExistingPathIndex}]: ${input}`);
+    const input = existingPaths[0];
+    console.log(`[chrome-aws-lambda] Chromium path found: ${input}`);
 
     const promises = [
       inflate(`${input}/chromium.br`),
